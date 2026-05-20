@@ -1,16 +1,23 @@
 <!DOCTYPE html>
+<!-- 文档类型声明，指定为HTML5 -->
 <html lang="zh-CN">
+<!-- 网页语言设置为简体中文 -->
 <head>
+    <!-- 字符编码设置为UTF-8，支持所有中文和特殊字符 -->
     <meta charset="UTF-8">
+    <!-- 移动端视口设置：宽度自适应设备，禁止缩放，保证手机端显示正常 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>心理健康 离线答题训练系统</title>
+    <!-- 网页标题 -->
+    <title>关注吴政谢谢喵~</title>
     <style>
+        /* 全局样式重置：清除默认内外边距，盒模型统一，设置通用字体 */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: "Microsoft YaHei", system-ui, sans-serif;
         }
+        /* 页面背景、内边距、行高、字体大小、底部留白 */
         body {
             background-color: #f5f7fa;
             padding: 15px 10px;
@@ -18,6 +25,7 @@
             font-size: 15px;
             padding-bottom: 30px;
         }
+        /* 主体容器：最大宽度、居中、白色背景、圆角、内边距、阴影 */
         .container {
             max-width: 900px;
             margin: 0 auto;
@@ -26,13 +34,14 @@
             padding: 20px 15px;
             box-shadow: 0 2px 15px rgba(0,0,0,0.1);
         }
+        /* 主标题：居中、颜色、下边距、字体大小 */
         h1 {
             text-align: center;
             color: #2c3e50;
             margin-bottom: 20px;
             font-size: 20px;
         }
-        /* 模式栏：增加设置按钮 */
+        /* 模式按钮栏：弹性布局、间距、换行、居中、下边距 */
         .mode-box {
             display: flex;
             gap: 10px;
@@ -40,6 +49,7 @@
             margin-bottom: 20px;
             justify-content: center;
         }
+        /* 通用按钮样式：模式按钮 + 设置按钮 */
         .mode-btn, .set-btn {
             padding: 8px 12px;
             border: none;
@@ -53,13 +63,15 @@
             min-width: 90px;
             max-width: 130px;
         }
+        /* 激活的模式按钮：加深背景色 */
         .mode-btn.active {
             background: #2980b9;
         }
+        /* 设置按钮专用颜色 */
         .set-btn {
             background: #27ae60;
         }
-        /* 电脑端右侧悬浮面板 */
+        /* 电脑端右侧悬浮面板：默认隐藏、固定定位、右侧20px、垂直居中、白色背景、内边距、圆角、阴影、层级、最小宽度 */
         .float-panel {
             display: none;
             position: fixed;
@@ -73,12 +85,13 @@
             z-index: 999;
             min-width: 180px;
         }
+        /* 屏幕≥768px（电脑/平板）显示右侧悬浮面板 */
         @media (min-width: 768px) {
             .float-panel {
                 display: block;
             }
         }
-        /* 移动端底部弹窗遮罩 */
+        /* 移动端弹窗遮罩：全屏固定、半黑背景、层级、默认隐藏 */
         .popup-mask {
             position: fixed;
             inset: 0;
@@ -86,7 +99,7 @@
             z-index: 1000;
             display: none;
         }
-        /* 移动端底部弹窗 */
+        /* 移动端底部弹窗：固定定位、底部贴边、白色背景、顶部圆角、内边距、层级、默认在屏幕外、平滑过渡 */
         .popup-set {
             position: fixed;
             left: 0;
@@ -99,12 +112,14 @@
             transform: translateY(100%);
             transition: transform 0.3s ease;
         }
+        /* 弹窗显示类：滑入屏幕 */
         .popup-set.show {
             transform: translateY(0);
         }
         .popup-mask.show {
             display: block;
         }
+        /* 弹窗标题：居中、字体大小、加粗、下边距、颜色 */
         .popup-head {
             text-align: center;
             font-size: 16px;
@@ -112,6 +127,7 @@
             margin-bottom: 15px;
             color: #333;
         }
+        /* 开关项布局：弹性、垂直居中、两端对齐、外边距、字体大小 */
         .switch-item {
             display: flex;
             align-items: center;
@@ -119,6 +135,7 @@
             margin: 12px 0;
             font-size: 14px;
         }
+        /* 面板功能按钮：宽度100%、内边距、外边距、无边框、圆角、文字颜色、指针 */
         .float-btn {
             width: 100%;
             padding: 10px 0;
@@ -129,22 +146,26 @@
             cursor: pointer;
             font-size: 14px;
         }
+        /* 三个功能按钮分别配色 */
         .float-btn:nth-child(1) {background: #95a5a6;}
         .float-btn:nth-child(2) {background: #e67e22;}
         .float-btn:nth-child(3) {background: #e74c3c;}
+        /* 关闭按钮：灰色系 */
         .close-popup {
             margin-top: 10px;
             background: #eee !important;
             color: #333 !important;
         }
-        /* 开关样式 */
+        /* 开关整体样式 */
         .switch {
             position: relative;
             display: inline-block;
             width: 38px;
             height: 20px;
         }
+        /* 隐藏原生checkbox */
         .switch input {opacity: 0; width: 0; height: 0;}
+        /* 开关滑动条 */
         .slider {
             position: absolute;
             cursor: pointer;
@@ -153,6 +174,7 @@
             transition: .4s;
             border-radius: 20px;
         }
+        /* 开关圆形滑块 */
         .slider:before {
             position: absolute;
             content: "";
@@ -162,22 +184,27 @@
             transition: .4s;
             border-radius: 50%;
         }
+        /* 选中时开关变色 */
         input:checked + .slider {background-color: #27ae60;}
+        /* 选中时滑块右移 */
         input:checked + .slider:before {transform: translateX(18px);}
-        /* 题目区域 */
+        /* 题目容器：上下外边距 */
         .q-container {
             margin: 15px 0;
         }
+        /* 单题卡片：底部外边距、底部内边距、底部边框 */
         .q-item {
             margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 1px solid #eee;
         }
+        /* 题干：字体大小、颜色、底部外边距 */
         .q-title {
             font-size: 15px;
             color: #2c3e50;
             margin-bottom: 12px;
         }
+        /* 选项样式：外边距、内边距、圆角、指针、边框、过渡、最小高度、垂直居中 */
         .option-item {
             margin: 8px 0;
             padding: 12px 10px;
@@ -190,9 +217,13 @@
             display: flex;
             align-items: center;
         }
+        /* 点击反馈 */
         .option-item:active {background: #f0f7ff;}
+        /* 正确选项：绿色 */
         .option-item.correct {background: #2ecc71; color: #fff; border-color: #27ae60;}
+        /* 错误选项：红色 */
         .option-item.wrong {background: #e74c3c; color: #fff; border-color: #c0392b;}
+        /* 答案提示：默认隐藏、黄色背景、圆角、文字颜色、字体大小 */
         .answer-hint {
             margin-top: 10px;
             padding: 8px 10px;
@@ -202,13 +233,14 @@
             display: none;
             font-size: 14px;
         }
-        /* 分页控制 */
+        /* 分页控制：弹性布局、两端对齐、上外边距、间距 */
         .page-control {
             display: flex;
             justify-content: space-between;
             margin-top: 20px;
             gap: 10px;
         }
+        /* 分页按钮：自适应宽度、内边距、无边框、圆角、蓝色背景、白色文字、指针 */
         .page-btn {
             flex: 1;
             padding: 12px 0;
@@ -219,29 +251,32 @@
             cursor: pointer;
             font-size: 15px;
         }
+        /* 禁用按钮：灰色、禁止指针 */
         .page-btn:disabled {background: #bdc3c7; cursor: not-allowed;}
-        /* 统计信息 */
+        /* 统计信息：居中、外边距、字体大小、灰色 */
         .stat-info {
             text-align: center;
             margin: 10px 0;
             font-size: 14px;
             color: #666;
         }
-        /* 无题目提示 */
+        /* 空数据提示：居中、上下内边距、浅灰色、字体大小 */
         .empty-tip {
             text-align: center;
             padding: 40px 0;
             color: #999;
             font-size: 15px;
         }
+        /* 分割线：无边框、顶部1px浅灰线 */
         hr {
             margin:10px 0;border:none;border-top:1px solid #eee;
         }
     </style>
 </head>
 <body>
+    <!-- 主体容器 -->
     <div class="container">
-        <h1>心理健康 离线答题训练系统</h1>
+        <h1>第十一届青心赛题库</h1>
         <!-- 模式选择 + 设置按钮 -->
         <div class="mode-box">
             <button class="mode-btn" data-mode="all">全部题库</button>
@@ -249,14 +284,14 @@
             <button class="mode-btn" data-mode="error">错题训练</button>
             <button class="set-btn" id="openSetBtn">设置</button>
         </div>
-        <!-- 统计信息 -->
+        <!-- 统计信息：当前题数 / 总题数 + 错题数 -->
         <div class="stat-info">
             进度：<span id="currIdx">0</span> / <span id="totalNum">0</span> &nbsp;&nbsp;
             错题：<span id="errorCount">0</span>
         </div>
         <!-- 题目渲染区域 -->
         <div id="questionBox" class="q-container"></div>
-        <!-- 分页按钮 -->
+        <!-- 分页按钮：上一题 / 下一题 -->
         <div class="page-control">
             <button class="page-btn" id="prevBtn">上一题</button>
             <button class="page-btn" id="nextBtn">下一题</button>
@@ -293,8 +328,9 @@
         <button class="float-btn" id="clearError">清空错题库</button>
     </div>
 
-    <!-- 移动端底部弹窗设置 -->
+    <!-- 移动端底部弹窗遮罩 -->
     <div class="popup-mask" id="popupMask"></div>
+    <!-- 移动端底部弹窗设置 -->
     <div class="popup-set" id="popupSet">
         <div class="popup-head">功能设置</div>
         <div class="switch-item">
@@ -326,7 +362,8 @@
     </div>
 
     <script>
-        // 完整题库数据
+        // ===================== 全局配置 =====================
+        // 完整题库数据（心理健康题目）
         const questionBank = [
 {"q":"以下哪项不符合心理健康的标准？?","opts":["A. 自我陶醉","B. 勇敢","C. 关爱他人","D. 热爱生命"],"ans":"A"},
 {"q":"请在下列选项中找出低自我形象。?","opts":["A. 接纳自我","B. 有安全感","C. 不清楚个人的能力","D. 对自己的行为负责"],"ans":"C"},
@@ -430,20 +467,20 @@
 {"q":"以下哪一项对压力的理解是正确的?","opts":["A. 压力管理贯穿生命始终","B. 你离开单位时就会留下工作的压力而不会把它带回家","C. 只要你遭受到压力,你一定会知道的","D. 压力是可以完全消除的"],"ans":"A"}
         ];
 
-        // 全局状态
+        // 全局状态：存储模式、当前题号、试卷、错题、设置
         let appState = {
-            mode: 'all',
-            currIdx: 0,
-            currPaper: [],
-            errorList: [],
-            settings: {
-                showAns: false,
-                allPage: false,
-                autoNext: false
+            mode: 'all',         // 当前模式：全部/随机50/错题
+            currIdx: 0,          // 当前题目索引
+            currPaper: [],       // 当前试卷
+            errorList: [],       // 错题列表
+            settings: {          // 设置项
+                showAns: false,  // 选后显示答案
+                allPage: false,  // 整页显示
+                autoNext: false  // 答对自动下一题
             }
         };
 
-        // DOM元素
+        // ===================== DOM元素获取 =====================
         const questionBox = document.getElementById('questionBox');
         const currIdxEl = document.getElementById('currIdx');
         const totalNumEl = document.getElementById('totalNum');
@@ -465,7 +502,8 @@
         const popSwitches = document.querySelectorAll('.pop-switch');
         const popBtns = document.querySelectorAll('.pop-btn');
 
-        // 数组随机打乱
+        // ===================== 工具函数 =====================
+        // 数组随机打乱（Fisher-Yates算法）
         function shuffleArr(arr) {
             let res = [...arr];
             for(let i = res.length - 1; i > 0; i--) {
@@ -475,14 +513,15 @@
             return res;
         }
 
-        // 本地存储
+        // 本地存储：保存状态到localStorage
         function saveLocal() {
             localStorage.setItem('examAppState', JSON.stringify(appState));
         }
+        // 本地存储：加载状态
         function loadLocal() {
             let data = localStorage.getItem('examAppState');
             if(data) appState = JSON.parse(data);
-            // 同步双端开关状态
+            // 同步双端开关状态（电脑端 + 手机弹窗）
             showAnsSwitch.checked = appState.settings.showAns;
             allPageSwitch.checked = appState.settings.allPage;
             autoNextSwitch.checked = appState.settings.autoNext;
@@ -492,12 +531,13 @@
             refreshErrorCount();
         }
 
-        // 刷新错题数
+        // 刷新错题数量显示
         function refreshErrorCount() {
             errorCountEl.innerText = appState.errorList.length;
         }
 
-        // 初始化试卷
+        // ===================== 核心功能 =====================
+        // 初始化试卷：根据模式生成题目
         function initPaper(mode, isNew = true) {
             appState.mode = mode;
             if(isNew) appState.currIdx = 0;
@@ -526,18 +566,19 @@
             });
         }
 
-        // 渲染题目
+        // 渲染题目到页面
         function renderQuestions() {
             questionBox.innerHTML = '';
             const {currPaper, currIdx, settings} = appState;
             if(currPaper.length === 0) return;
 
+            // 根据设置判断：单题显示 / 整页显示
             let renderList = settings.allPage ? currPaper : [currPaper[currIdx]];
 
             renderList.forEach((item, idx) => {
                 let qDiv = document.createElement('div');
                 qDiv.className = 'q-item';
-                let shuffledOpts = shuffleArr([...item.opts]);
+                let shuffledOpts = shuffleArr([...item.opts]); // 选项随机打乱
                 let correctOpt = item.ans;
 
                 let html = `<div class="q-title">${settings.allPage ? idx+1 : currIdx+1}. ${item.q}</div>`;
@@ -549,12 +590,12 @@
                 questionBox.appendChild(qDiv);
             });
 
-            bindOptionClick();
-            updatePageBtn();
+            bindOptionClick(); // 绑定选项点击事件
+            updatePageBtn();   // 更新分页按钮状态
             currIdxEl.innerText = currIdx + 1;
         }
 
-        // 绑定选项点击
+        // 绑定选项点击事件：判断对错、记录错题
         function bindOptionClick() {
             const optionItems = document.querySelectorAll('.option-item');
             optionItems.forEach(opt => {
@@ -567,14 +608,17 @@
                     let hint = parentQ.querySelector('.answer-hint');
 
                     if(userAns === rightAns) {
+                        // 答对：绿色标记，从错题中移除
                         this.classList.add('correct');
                         let qItem = appState.currPaper[appState.currIdx];
                         appState.errorList = appState.errorList.filter(x => x.q !== qItem.q);
                         refreshErrorCount();
+                        // 自动下一题
                         if(appState.settings.autoNext) {
                             setTimeout(() => nextQuestion(), 600);
                         }
                     } else {
+                        // 答错：红色标记，加入错题本
                         this.classList.add('wrong');
                         let qItem = appState.currPaper[appState.currIdx];
                         let hasExist = appState.errorList.some(x => x.q === qItem.q);
@@ -582,11 +626,13 @@
                             appState.errorList.push(qItem);
                             refreshErrorCount();
                         }
+                        // 标出正确答案
                         parentQ.querySelectorAll('.option-item').forEach(o => {
                             if(o.dataset.val === rightAns) o.classList.add('correct');
                         });
                     }
 
+                    // 显示答案提示
                     if(appState.settings.showAns) {
                         hint.style.display = 'block';
                     }
@@ -595,7 +641,7 @@
             });
         }
 
-        // 上下题
+        // 上一题 / 下一题
         function prevQuestion() {
             if(appState.currIdx > 0) {
                 appState.currIdx--;
@@ -611,16 +657,15 @@
             }
         }
 
-        // 分页按钮状态
+        // 更新分页按钮禁用状态
         function updatePageBtn() {
             prevBtn.disabled = appState.currIdx === 0;
             nextBtn.disabled = appState.currIdx === appState.currPaper.length - 1;
         }
 
-        // 开关同步逻辑
+        // 开关状态同步：电脑端 + 手机弹窗双向同步
         function syncSwitch(name, val) {
             appState.settings[name] = val;
-            // 同步电脑端+弹窗开关
             document.getElementById(name+'Switch').checked = val;
             popSwitches.forEach(item=>{
                 if(item.dataset.id === name+'Switch') item.checked = val;
@@ -629,6 +674,20 @@
             renderQuestions();
         }
 
+        // ===================== 弹窗控制 =====================
+        function openPopup() {
+            popupMask.classList.add('show');
+            popupSet.classList.add('show');
+        }
+        function closePopup() {
+            popupMask.classList.remove('show');
+            popupSet.classList.remove('show');
+        }
+        openSetBtn.onclick = openPopup;
+        closeSetBtn.onclick = closePopup;
+        popupMask.onclick = closePopup;
+
+        // ===================== 事件绑定 =====================
         // 电脑端开关监听
         showAnsSwitch.onchange = ()=>syncSwitch('showAns', showAnsSwitch.checked);
         allPageSwitch.onchange = ()=>syncSwitch('allPage', allPageSwitch.checked);
@@ -642,20 +701,7 @@
             }
         });
 
-        // 弹窗打开关闭
-        function openPopup() {
-            popupMask.classList.add('show');
-            popupSet.classList.add('show');
-        }
-        function closePopup() {
-            popupMask.classList.remove('show');
-            popupSet.classList.remove('show');
-        }
-        openSetBtn.onclick = openPopup;
-        closeSetBtn.onclick = closePopup;
-        popupMask.onclick = closePopup;
-
-        // 弹窗功能按钮
+        // 弹窗功能按钮（重置/重新随机/清空错题）
         popBtns.forEach(btn=>{
             btn.onclick = function(){
                 const type = this.dataset.type;
@@ -666,37 +712,33 @@
             }
         });
 
-        // 页面按钮事件
+        // 分页按钮
         prevBtn.onclick = prevQuestion;
         nextBtn.onclick = nextQuestion;
 
-        resetCurrBtn.onclick = function() {
-            renderQuestions();
-        };
-        resetNewBtn.onclick = function() {
-            initPaper(appState.mode, true);
-        };
+        // 功能按钮
+        resetCurrBtn.onclick = function() { renderQuestions(); };
+        resetNewBtn.onclick = function() { initPaper(appState.mode, true); };
         clearErrorBtn.onclick = function() {
             if(confirm('确定清空所有错题记录？不可恢复！')) {
                 appState.errorList = [];
                 refreshErrorCount();
                 saveLocal();
-                if(appState.mode === 'error') {
-                    initPaper('error');
-                }
+                if(appState.mode === 'error') initPaper('error');
             }
         };
 
+        // 模式切换按钮
         modeBtns.forEach(btn => {
             btn.onclick = function() {
                 initPaper(this.dataset.mode, true);
             };
         });
 
-        // 初始化
+        // ===================== 页面初始化 =====================
         window.onload = function() {
-            loadLocal();
-            initPaper(appState.mode, false);
+            loadLocal();    // 加载本地存储
+            initPaper(appState.mode, false); // 初始化试卷
         };
     </script>
 </body>
