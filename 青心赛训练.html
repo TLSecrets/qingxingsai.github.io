@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大学生心理健康离线答题训练系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        /* 模式选择区 */
+        .mode-box {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+            justify-content: center;
+        }
+        .mode-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            background: #3498db;
+            color: #fff;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+        .mode-btn.active {
+            background: #2980b9;
+        }
+        .mode-btn:hover {
+            opacity: 0.9;
+        }
+        /* 悬浮功能开关面板 */
+        .float-panel {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 12px rgba(0,0,0,0.15);
+            z-index: 999;
+            min-width: 180px;
+        }
+        .float-panel h4 {
+            margin-bottom: 12px;
+            color: #333;
+            font-size: 16px;
+            text-align: center;
+        }
+        .switch-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .float-btn {
+            width: 100%;
+            padding: 8px 0;
+            margin: 6px 0;
+            border: none;
+            border-radius: 4px;
+            background: #95a5a6;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .float-btn:nth-child(2) {background: #e67e22;}
+        .float-btn:nth-child(3) {background: #e74c3c;}
+        /* 开关样式 */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+        .switch input {opacity: 0; width: 0; height: 0;}
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 20px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px; width: 16px;
+            left: 2px; bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {background-color: #27ae60;}
+        input:checked + .slider:before {transform: translateX(20px);}
+        /* 题目区域 */
+        .q-container {
+            margin: 20px 0;
+        }
+        .q-item {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .q-title {
+            font-size: 16px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .option-item {
+            margin: 10px 0;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            transition: all 0.2s;
+        }
+        .option-item:hover {background: #f0f7ff;}
+        .option-item.correct {background: #2ecc71; color: #fff; border-color: #27ae60;}
+        .option-item.wrong {background: #e74c3c; color: #fff; border-color: #c0392b;}
+        .answer-hint {
+            margin-top: 10px;
+            padding: 8px;
+            background: #fef5e7;
+            border-radius: 4px;
+            color: #d35400;
+            display: none;
+        }
+        /* 分页控制 */
+        .page-control {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        .page-btn {
+            padding: 8px 25px;
+            border: none;
+            border-radius: 4px;
+            background: #3498db;
+            color: #fff;
+            cursor: pointer;
+        }
+        .page-btn:disabled {background: #bdc3c7; cursor: not-allowed;}
+        /* 统计信息 */
+        .stat-info {
+            text-align: center;
+            margin: 15px 0;
+            font-size: 15px;
+            color: #666;
+        }
+        /* 无题目提示 */
+        .empty-tip {
+            text-align: center;
+            padding: 50px 0;
+            color: #999;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>大学生心理健康 离线答题训练系统</h1>
+        <!-- 模式选择 -->
+        <div class="mode-box">
+            <button class="mode-btn" data-mode="all">全部题库训练</button>
+            <button class="mode-btn" data-mode="rand50">随机50题训练</button>
+            <button class="mode-btn" data-mode="error">错题库专项训练</button>
+        </div>
+        <!-- 统计信息 -->
+        <div class="stat-info">
+            当前进度：<span id="currIdx">0</span> / <span id="totalNum">0</span> &nbsp;&nbsp;
+            错题总数：<span id="errorCount">0</span>
+        </div>
+        <!-- 题目渲染区域 -->
+        <div id="questionBox" class="q-container"></div>
+        <!-- 分页按钮 -->
+        <div class="page-control">
+            <button class="page-btn" id="prevBtn">上一题</button>
+            <button class="page-btn" id="nextBtn">下一题</button>
+        </div>
+    </div>
+
+    <!-- 悬浮功能面板 -->
+    <div class="float-panel">
+        <h4>功能开关</h4>
+        <div class="switch-item">
+            <span>选择后显示答案</span>
+            <label class="switch">
+                <input type="checkbox" id="showAnsSwitch">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="switch-item">
+            <span>整页显示所有题目</span>
+            <label class="switch">
+                <input type="checkbox" id="allPageSwitch">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="switch-item">
+            <span>答对自动下一题</span>
+            <label class="switch">
+                <input type="checkbox" id="autoNextSwitch">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <hr style="margin:15px 0;border:none;border-top:1px solid #eee;">
+        <button class="float-btn" id="resetCurr">重置当前试卷</button>
+        <button class="float-btn" id="resetNew">重新随机新试卷</button>
+        <button class="float-btn" id="clearError">清空错题库</button>
+    </div>
+
+    <script>
+        // 1. 完整题库数据
+        const questionBank = [
+{"q":"以下哪项不符合心理健康的标准？?","opts":["A. 自我陶醉","B. 勇敢","C. 关爱他人","D. 热爱生命"],"ans":"A"},
+{"q":"请在下列选项中找出低自我形象。?","opts":["A. 接纳自我","B. 有安全感","C. 不清楚个人的能力","D. 对自己的行为负责"],"ans":"C"},
+{"q":"以下哪一项不是人生发展顺利的表现？?","opts":["A. 不顾未来","B. 行动有信心","C. 独立进取","D. 感情甜蜜"],"ans":"A"},
+{"q":"请在下列选项中选出成长的阻力。?","opts":["A. 被了解","B. 受支持","C. 称赞","D. 被忽略"],"ans":"D"},
+{"q":"大学生自我形象不包括以下哪一类型？?","opts":["A. 延缓型","B. 达成型","C. 确定型","D. 早定型"],"ans":"C"},
+{"q":"大学生自我形象不包括以下哪一项？?","opts":["A. 友善","B. 成熟","C. 学业","D. 作息"],"ans":"D"},
+{"q":"以下哪一项不属于PERMA模型？?","opts":["A. 人际关系","B. 性格","C. 投入","D. 意义"],"ans":"B"},
+{"q":"下面哪一项不在积极心理学的六类美德之中？?","opts":["A. 仁爱","B. 正义","C. 节制","D. 诚实"],"ans":"D"},
+{"q":"积极心理学的24种优势不包含以下哪一项？?","opts":["A. 公平","B. 责备","C. 好奇心","D. 希望"],"ans":"B"},
+{"q":"以下哪一部分不属于个体自我的总和之一？?","opts":["A. 思想","B. 行动","C. 情感","D. 态度"],"ans":"B"},
+{"q":"以下\"情绪\"的描述,哪一项是不恰当的？?","opts":["A. 情绪是指客观事物是否满足人的需要所产生的内心体验","B. 在需要得到满足时,会产生积极的情绪","C. 人要时刻保持积极情绪才是好的","D. 积极情绪有喜悦、爱、轻松、宁静"],"ans":"C"},
+{"q":"下列哪一项不属于积极情绪的功能？?","opts":["A. 积极情绪会激活一般的行为趋势","B. 积极情绪会扩展个体的瞬间思维活动序列","C. 积极情绪有利于心理和身体健康","D. 积极情绪让人一直保持在喜悦平和的状态"],"ans":"D"},
+{"q":"以下\"消极情绪\"的描述,哪一项是不恰当的？?","opts":["A. 消极情绪是在某种具体行为中,由外因或内因影响而产生的不良情绪体验","B. 消极情绪有羞愧、内疚、恐惧、悲伤","C. 在需要得不到满足时,会产生消极的感受","D. 消极情绪是不正常的"],"ans":"D"},
+{"q":"下列哪一项不属于情绪的外部表现？?","opts":["A. 面部表情","B. 体态表情","C. 他人表情","D. 语言表情"],"ans":"C"},
+{"q":"下列哪一项不属于情绪管理的有效方式？?","opts":["A. 发怒时努力控制,不让任何人知道","B. 觉察自己的情绪状态并了解产生的原因","C. 了解别人的情绪状态","D. 不断激励自己,增强容忍力"],"ans":"A"},
+{"q":"下列哪一项不属于表达感受的有效方式？?","opts":["A. 表达感受增进沟通","B. 对自己诚实,不隐瞒及否定感受","C. 找寻及说出感受的来源","D. 在任何环境下都去表达感受"],"ans":"D"},
+{"q":"下列哪一项不属于情绪调节的常用方式？?","opts":["A. 宣泄法","B. 否认法","C. 暗示法","D. 运动法"],"ans":"B"},
+{"q":"下列哪一项不属于Ellis\"ABCD\"理论？?","opts":["A. 诱发事件","B. 自我信念","C. 积极结果","D. 观念调整"],"ans":"C"},
+{"q":"下列哪一项不属于不合理信念的特征？?","opts":["A. 绝对化要求","B. 客观真实","C. 过分概括化","D. 糟糕至极"],"ans":"B"},
+{"q":"下列哪一项不属于Seligman乐观解释风格？?","opts":["A. 暂时性的","B. 个别的","C. 他人的","D. 非个人的"],"ans":"C"},
+{"q":"以下描述属于吉尔福特(J.Guilford)提出的创造力人格的是？?","opts":["A. 拥有充沛的体能,但都是很安静的休息者,贪玩同时又遵守纪律","B. 容忍事物的模糊性,期望被认可","C. 愿意克服障碍,追求完美的结果","D. 有高度的独立性、旺盛的求知欲以及幽默感,能够长时间专注于某个感兴趣问题中"],"ans":"D"},
+{"q":"创造性思维评估的指标是？?","opts":["A. 流畅性、独创性和灵活性","B. 高效性、敏捷性和丰富性","C. 乐观性、幽默性和多产性","D. 独特性、唯一性和实用性"],"ans":"A"},
+{"q":"以下说法,哪一项是正确的？?","opts":["A. 创造性培养最根本的问题是塑造创造性人格","B. 创造力和智力属于同一个范畴","C. 创造性培养最根本的问题是，是否处于一个良好的环境中","D. 每个人的潜能只能挖掘出4%-10%,大学时期潜能开发较为困难"],"ans":"A"},
+{"q":"下列选项都有助于你提高创造智商CQ的是？?","opts":["A. 多观察多思考、敢于提出质疑、追求完美","B. 保持好奇心、坚韧刻苦、全力以赴","C. 积极思维、善用想象、对事物保持批判","D. 热爱生活、保持乐观的心态、主动训练自己"],"ans":"D"},
+{"q":"根据罗晓路，俞国良2010年研究，下列关于大学生心理健康与创造力的关系哪一项是正确的？?","opts":["A. 心理健康水平与创造力呈负相关","B. 心理健康水平与创造力不存在显著关系","C. 心理健康水平的提升，不能促进创造力的发挥和发展","D. 心理健康水平的提升，可以促进创造力的发挥和发展"],"ans":"D"},
+{"q":"下列哪一项不属于创造智商CQ的主要构成？?","opts":["A. 变通能力","B. 觉察能力","C. 冒险能力","D. 学习能力"],"ans":"D"},
+{"q":"下列哪一项不属于创造智商CQ高者的特征？?","opts":["A. 对传统事务和权威有独到意见","B. 对是非曲直有辨别能力","C. 喜欢批判评价他人","D. 拥有丰富的直觉"],"ans":"C"},
+{"q":"下列关于聚合思维和发散思维，描述错误的是？?","opts":["A. 聚合思维以逻辑为基础","B. 聚合思维具有不稳定性、无方向性的特点","C. 发散思维以形象思维为基础","D. 发散思维也是直觉思维，与知识经验的丰富程度有密切关系"],"ans":"B"},
+{"q":"下列不属于Taylor提出的创造力分类是？?","opts":["A. 表达式的创造","B. 技术性的创造","C. 发明式的创造","D. 艺术性的创造"],"ans":"D"},
+{"q":"影响创造力的因素描述错误的是？?","opts":["A. 创造力的强弱与主观和客观因素都有关，两者互为影响","B. 主观因素包括：性格、个人的思维方法和个人所在的环境","C. 客观因素包括：家庭、不同团体、教育制度、文化及社会因素","D. 个体面对需要时候，能够奋起应对，激发自己不知晓的能力"],"ans":"B"},
+{"q":"下列哪一项不属于心理资本的是？?","opts":["A. 自信","B. 希望","C. 乐观","D. 意志"],"ans":"D"},
+{"q":"悲观者对逆境反应模式是？?","opts":["A. 永久因素,影响有限,外在因素","B. 永久因素,影响一切,内在因素","C. 暂时因素,影响有限,外在因素","D. 暂时因素,影响一切,内在因素"],"ans":"B"},
+{"q":"宾西法尼亚大学心理学系教授凯伦·瑞维奇(Karen Reivich)和安德鲁·夏特(Andrew Shatte)认为,抗逆力涵盖两个层面?","opts":["A. 从困境复原的能力和寻求积极意义","B. 对自我情绪的意识和控制冲动","C. 从困境复原的能力和乐观","D. 控制冲动和寻求积极意义"],"ans":"A"},
+{"q":"下列哪一项不属于Garmezy(1988)的抗逆力保护因子的是？?","opts":["A. 积极人格特质的建构","B. 家庭支持系统的建立","C. 社会支持与外在资源的建构","D. 亲密关系的维护"],"ans":"D"},
+{"q":"以下不属于抗逆力的个人保护因子的是？?","opts":["A. 对事件的乐观归因能力","B. 幽默感","C. 满足感","D. 自我效能感"],"ans":"C"},
+{"q":"以下不属于个体抗逆力的家庭保护因子的是？?","opts":["A. 支持与关心孩子的父母与良好的亲子联结","B. 较少的家庭冲突","C. 乐观的父母生活态度","D. 父母的道德观念"],"ans":"D"},
+{"q":"以下不属于个体抗逆力的环境保护因子的是？?","opts":["A. 有关心孩子的亲朋好友","B. 孩子在社区与学校都有重要他人的人际支持系统","C. 成功的学校经验","D. 社区丰富的娱乐设施"],"ans":"D"},
+{"q":"以下哪一项不属于学校为个体抗逆力提供的保护因子？?","opts":["A. 鼓励学生尽量参与学校各项活动","B. 对学生的学业成就应要求高但需合理","C. 教师对学生应表现出关心、支持的态度","D. 学校严格各项考试的设置"],"ans":"D"},
+{"q":"外在保护因子中最重要的保护因子是？?","opts":["A. 关怀","B. 支持","C. 情感连结","D. 分担"],"ans":"C"},
+{"q":"以下哪一项对抗逆力的理解是错误的？?","opts":["A. 抗逆力是人天生的一种潜能,是面对危机或逆境的适应,是不可改变的","B. 抗逆力是内在的改变、自我校正及复原的一股动力","C. 抗逆力可以预防或克服逆境带来的损害","D. 抗逆力帮助人们面对挫折,更快复原,更多成长"],"ans":"A"},
+{"q":"普林斯顿大学曾对1万份人事档案进行分析,调查显示,占成功因素最大的比例的是?","opts":["A. 智慧","B. 专业技术","C. 丰富的经验","D. 良好的人际沟通"],"ans":"D"},
+{"q":"以下关于单双向沟通正确的是?","opts":["A. 单双向沟通各有利弊","B. 双相沟通优于单向沟通","C. 上课时,老师更倾向于用双向沟通","D. 当甲方滔滔不绝的说话,乙方不能跟上。此时,这种双向沟通会造成沟通的停止及影响双方的关系"],"ans":"A"},
+{"q":"与双相沟通相比,以下哪个不属于单向沟通的特点?","opts":["A. 快捷、迅速","B. 不易准确被理解","C. 更有准确性","D. 发送者的满意度更高"],"ans":"C"},
+{"q":"与单向沟通相比,以下哪个不属于双相沟通的特点?","opts":["A. 需要更多时间","B. 接受者的满意度更高","C. 对发送者的压力更小","D. 促使双方感情更融洽"],"ans":"C"},
+{"q":"以下哪项说法是正确的?","opts":["A. 从准确度讲,单向沟通信息更易准确理解","B. 从置信度讲,单向沟通接受者更容易确信","C. 从压力上讲,对发送者双相沟通承受的压力小于单向沟通","D. 从情感上讲,双相沟通优于单向沟通"],"ans":"D"},
+{"q":"以下哪项说法是错误的?","opts":["A. 非言语沟通包括姿势、眼神、表情、语气","B. 非言语沟通几乎没法通过练习来提高","C. 非言语沟通更难反映一个人的真想","D. 非言语沟通更难控制"],"ans":"B"},
+{"q":"以下哪一项属于信息发出者的责任?","opts":["A. 核对收到信息的清晰度","B. 核对是否与送出信息相符","C. 尽可能让对方听完整","D. 核对信息的完整度"],"ans":"B"},
+{"q":"以下哪种沟通方式可以让沟通持续下去,让双方关系变好?","opts":["A. 主动建设型","B. 主动破坏型","C. 被动建设型","D. 被动破坏型"],"ans":"A"},
+{"q":"以下哪项不属于沟通最重要的三因素?","opts":["A. 回应","B. 发讯者","C. 收讯者","D. 信息"],"ans":"A"},
+{"q":"以下哪张图正确表现了双向沟通?","opts":["A. S —M—▶ R","B. R —M—▶ S","C. S —M—▶ R ◀——","D. R —M—▶ S ◀——"],"ans":"C"},
+{"q":"以下能让人更快乐和健康的因素是?","opts":["A. 财富","B. 名望","C. 良好的人际关系","D. 拼命的工作"],"ans":"C"},
+{"q":"以下哪一项不是对人际沟通影响最深的人格品质是?","opts":["A. 大胆","B. 忠诚","C. 真诚","D. 理解"],"ans":"A"},
+{"q":"人内心的困扰主要源于?","opts":["A. 无助感","B. 人际关系问题","C. 孤独感","D. 贫穷"],"ans":"B"},
+{"q":"以下哪一项不属于大学生人际交往的特点?","opts":["A. 主要交往对象是同龄人","B. 异性交往愿望逐渐强烈","C. 交往中功利色彩多情感色彩少","D. 交往心理向独立性理智型转化"],"ans":"C"},
+{"q":"以下哪一项不属于大学生最常见的人际困扰?","opts":["A. 自卑羞怯","B. 自我中心","C. 人际冲突","D. 排挤嘲讽"],"ans":"D"},
+{"q":"以下哪一项不属于影响人际和谐的最主要因素?","opts":["A. 信任、宽恕","B. 共情、感恩","C. 友善、体贴","D. 沟通、冲突解决"],"ans":"C"},
+{"q":"以下哪一项是良好人际关系的基本态度?","opts":["A. 你好-我不好","B. 你不好-我好","C. 你不好-我不好","D. 你好-我也好"],"ans":"D"},
+{"q":"以下哪一项是看待人际冲突合理的理解?","opts":["A. 化解冲突必然会有一方要妥协自己","B. 面对冲突最好的办法是大事化小小事化了","C. 冲突是一个信号,提示我们之前有矛盾需要处理","D. 好的关系不会有冲突出现"],"ans":"C"},
+{"q":"以下哪一项不是化解冲突的有效方法?","opts":["A. 有效沟通","B. 坚持立场","C. 坦诚相待","D. 求同存异"],"ans":"B"},
+{"q":"以下哪一项符合刻板印象的定义?","opts":["A. 指人们根据最初获得的信息所形成的印象不易改变,甚至会左右对后来新信息的解释","B. 指对事物形成的一般看法和个人评价,认为某种事物应该具有其特定的属性,而忽视事物的个体差异","C. 指最新出现的刺激物促使印象形成的心理效果","D. 指人际知觉中的以点概面或以偏概全的主观印象"],"ans":"B"},
+{"q":"下列哪一项不属于亲密关系的特点?","opts":["A. 了解、关心","B. 信任、依赖","C. 互动、承诺","D. 控制、讨好"],"ans":"D"},
+{"q":"研究发现,缺少亲密关系的人比有亲密关系的人死亡的可能性?","opts":["A. 低2~3倍","B. 高2~3倍","C. 没有明显变化","D. 不确定"],"ans":"B"},
+{"q":"以下哪种观点对于寻找爱的的真谛是没有积极作用的?","opts":["A. 爱是不重要的","B. 爱是一种能力","C. 爱需要学习","D. 爱是一门艺术"],"ans":"A"},
+{"q":"下列哪一项不属于爱情的定义?","opts":["A. 爱情是人际吸引最强烈的形式","B. 爱情是有浪漫色彩的","C. 爱情是一部分人的专利","D. 爱情是一种高级情感"],"ans":"C"},
+{"q":"以下哪个词语不能用来描述爱情?","opts":["A. 主动","B. 索取","C. 满足","D. 给予"],"ans":"B"},
+{"q":"爱情三元论不包括?","opts":["A. 亲密","B. 理解","C. 激情","D. 承诺"],"ans":"B"},
+{"q":"关于喜欢和爱慕,以下说法不对的是?","opts":["A. 爱慕是一种与单纯的喜欢极为不同的吸引","B. 爱慕比喜欢更加复杂","C. 爱慕比喜欢更具有排他和亲密的特点","D. 爱慕和喜欢是一样的情感"],"ans":"D"},
+{"q":"被称为\"爱情激素\"的人脑分泌的化学物质?","opts":["A. 多巴胺","B. 后叶催产素","C. 去甲肾上腺素","D. 内啡肽"],"ans":"B"},
+{"q":"爱情激素的好处不包括?","opts":["A. 增进对他人的信任","B. 令人变得更加慷慨大方","C. 帮助找到爱情伴侣","D. 有益心脏健康"],"ans":"C"},
+{"q":"以下哪一项不是恋人矛盾产生的原因?","opts":["A. 男性与女性对事情有不同的心理感受","B. 两个人会在个性方面不一样","C. 双方都不是完美无缺的,都会出错","D. 两个有着不同性格不同经历的人相处,就要彼此相互适应"],"ans":"D"},
+{"q":"下列哪一项不属于性教育的必要性?","opts":["A. 现代青少年性生理早熟,性需要提前","B. 不健康的性信息泛滥","C. 性贯穿在生命始终","D. 性是青少年发展的主要议题"],"ans":"D"},
+{"q":"下列哪一项不属于性教育的范畴?","opts":["A. 生理和心理的成长","B. 性病传播与预防","C. 性与文化","D. 性取向的探讨"],"ans":"D"},
+{"q":"下列哪一项不属于性教育的核心?","opts":["A. 对性障碍提供治疗与帮助","B. 提供与性有关的知识","C. 培养对性有正确态度","D. 建立健康的性价值观"],"ans":"A"},
+{"q":"下列哪一项不属于性心理健康的标准?","opts":["A. 对性有科学的认识和态度","B. 有正常的性需求和性欲望","C. 对性的要求毫不避讳","D. 有正当的性行为方式"],"ans":"C"},
+{"q":"下列哪一项不属于Trotzer & Trotzer(1986)提出的婚姻中性行为的四个基本功能?","opts":["A. 亲密","B. 自由","C. 繁衍","D. 需要"],"ans":"B"},
+{"q":"以下\"性\"需要的描述,哪一项是恰当的?","opts":["A. 男性与女性的\"性\"需要是一样的,伴侣一定与我有一样的需要","B. 选取为社会所接受的途径发泄性欲","C. 大学阶段有\"性\"需要是一种不正常的状况，应该寻求心理咨询师帮助","D. 时刻克制自己的\"性\"需要尽量少与异性接触"],"ans":"B"},
+{"q":"以下关于如何处理男、女朋友的\"性\"要求,哪一项是恰当的?","opts":["A. 大声斥责,让对方感觉羞愧","B. 无论自己是否愿意,都有义务满足对方的需要","C. 如果自己不愿意,应立即将对方的要求告知其父母,由父母出面干预","D. 如果自己不愿意,则应该坚持个人原则,无须因拒绝对方的要求而感到歉意"],"ans":"D"},
+{"q":"以下描述,哪一项是不恰当的?","opts":["A. 每个人都应该尊重任何一个他人的存在价值","B. 每个人都应该用自己的准则来对待他人","C. 每个人发展自尊和自尊都应该建筑于良好的人格标准基础上","D. 性欲是正常的和健康的,而且性欲是可以控制的"],"ans":"B"},
+{"q":"以下关于性知识的描述,哪一项是正确的?","opts":["A. 自慰过度频密对健康是没有妨碍的","B. 处女膜破裂一定表示非处女","C. 自慰对身体是有害的","D. 站着性交可以防止怀孕"],"ans":"A"},
+{"q":"下列哪一项不属于性心理异常?","opts":["A. 暴露癖","B. 易性癖","C. 恋物癖","D. 同性恋"],"ans":"D"},
+{"q":"生涯是指?","opts":["A. 个人一生的职业过程","B. 个人一生中所从事的工作,也涉及其他非工作/职业活动","C. 个人一生工作角色的连续体","D. 个人的职业成果"],"ans":"B"},
+{"q":"从生涯发展的角度来说,职业生涯选择中,我们最看重的应当是?","opts":["A. 内心的职业价值观与所选职业是否一致","B. 我的专业与所选职业是否匹配","C. 父母是否同意我的选择","D. 职业的经济收入是否可观"],"ans":"A"},
+{"q":"以下哪个选项不属于职业生涯的特点?","opts":["A. 独特性","B. 发展性","C. 终身性","D. 规划性"],"ans":"D"},
+{"q":"从生涯发展阶段论的角度,大学生阶段属于?","opts":["A. 生涯探索期","B. 生涯成长期","C. 生涯建立期","D. 生涯混沌期"],"ans":"A"},
+{"q":"根据\"职业生涯辅导之父\"帕森斯的理论,以下哪个选项不属于生涯规划的要素?","opts":["A. 知己","B. 知彼","C. 抉择","D. 兴趣"],"ans":"D"},
+{"q":"霍兰德职业类型中最喜欢指挥和带领团队的是?","opts":["A. 社会型","B. 企业型","C. 艺术型","D. 常规型"],"ans":"B"},
+{"q":"以下哪一项不属于影响职业生涯规划的外在因素?","opts":["A. 就业机会多寡","B. 经济景气的兴衰","C. 未来人生规划","D. 职业结构的变迁"],"ans":"C"},
+{"q":"根据霍兰德的理论,R型的人适合从事的职业为?","opts":["A. 机械自动化","B. 作曲家","C. 商人","D. 记账员"],"ans":"A"},
+{"q":"大学生探索职业世界的渠道不包括?","opts":["A. 参加招聘会","B. 冥想","C. 查看行业杂志","D. 实习见习"],"ans":"B"},
+{"q":"以下哪个选项不属于《中华人民共和国职业分类大典》(2015年版)中规定的8个大类职业?","opts":["A. 专业技术人员","B. 办事人员和有关人员","C. 军人","D. 农民"],"ans":"D"},
+{"q":"压力适当论认为压力和学习表现的关系是?","opts":["A. 压力越大,学习表现越好","B. 压力越小,学习表现越好","C. 压力在适当的时候学习表现最好,过高和过低的压力会降低学习表现","D. 压力在适当的时候学习表现最差,过高和过低的压力会提高学习表现"],"ans":"C"},
+{"q":"构成压力的主要原因是?","opts":["A. 运气","B. 转变","C. 个人特质","D. 拖延"],"ans":"B"},
+{"q":"压力的负面影响包括以下哪些方面?","opts":["A. 生理、情绪","B. 生理、情绪、行为","C. 生理、情绪、认知","D. 生理、情绪、认知、行为"],"ans":"D"},
+{"q":"下列哪一项不属于压力的正常功能?","opts":["A. 满足人的基本需要","B. 增强调试技巧","C. 增强压力抵抗力","D. 促进人际关系"],"ans":"D"},
+{"q":"以下属于心理方面的压力缓解之道的是?","opts":["A. 低估自己的能力","B. 否认自己的限制和弱点","C. 增强自信心","D. 健康的睡眠习惯"],"ans":"C"},
+{"q":"以下属于社会方面的压力缓解之道的是?","opts":["A. 适当的宣泄愤怒","B. 说人闲话","C. 凡事都应允","D. 保持运动"],"ans":"A"},
+{"q":"以下不属于压力应对一般策略的是?","opts":["A. 改变压力的来源","B. 改变个人和压力的关系","C. 改变他人","D. 改变自己"],"ans":"C"},
+{"q":"压力应对能力的影响因素包括?","opts":["A. 压力来源、应对资源","B. 个人特质、应对资源","C. 应对资源、压力来源","D. 压力来源、应对资源、个人特质"],"ans":"D"},
+{"q":"以下哪一项对压力的理解是正确的?","opts":["A. 除非你完全改变生活方式,否则你对压力一点也没有办法","B. 打针吃药就可以控制压力","C. 长期运动会增强你应对压力的能力","D. 有压力总是不好的"],"ans":"C"},
+{"q":"以下哪一项对压力的理解是正确的?","opts":["A. 压力管理贯穿生命始终","B. 你离开单位时就会留下工作的压力而不会把它带回家","C. 只要你遭受到压力,你一定会知道的","D. 压力是可以完全消除的"],"ans":"A"}
+        ];
+
+        // 2. 全局状态
+        let appState = {
+            mode: 'all',          // all / rand50 / error
+            currIdx: 0,           // 当前题目索引
+            currPaper: [],        // 当前试卷题目列表
+            errorList: [],        // 错题库
+            settings: {
+                showAns: false,
+                allPage: false,
+                autoNext: false
+            }
+        };
+
+        // 3. DOM元素
+        const questionBox = document.getElementById('questionBox');
+        const currIdxEl = document.getElementById('currIdx');
+        const totalNumEl = document.getElementById('totalNum');
+        const errorCountEl = document.getElementById('errorCount');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const showAnsSwitch = document.getElementById('showAnsSwitch');
+        const allPageSwitch = document.getElementById('allPageSwitch');
+        const autoNextSwitch = document.getElementById('autoNextSwitch');
+        const resetCurrBtn = document.getElementById('resetCurr');
+        const resetNewBtn = document.getElementById('resetNew');
+        const clearErrorBtn = document.getElementById('clearError');
+        const modeBtns = document.querySelectorAll('.mode-btn');
+
+        // 4. 工具函数：数组随机打乱
+        function shuffleArr(arr) {
+            let res = [...arr];
+            for(let i = res.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [res[i], res[j]] = [res[j], res[i]];
+            }
+            return res;
+        }
+
+        // 5. 本地存储读写
+        function saveLocal() {
+            localStorage.setItem('examAppState', JSON.stringify(appState));
+        }
+        function loadLocal() {
+            let data = localStorage.getItem('examAppState');
+            if(data) appState = JSON.parse(data);
+            // 同步开关状态
+            showAnsSwitch.checked = appState.settings.showAns;
+            allPageSwitch.checked = appState.settings.allPage;
+            autoNextSwitch.checked = appState.settings.autoNext;
+            refreshErrorCount();
+        }
+
+        // 6. 刷新错题数量显示
+        function refreshErrorCount() {
+            errorCountEl.innerText = appState.errorList.length;
+        }
+
+        // 7. 初始化当前试卷
+        function initPaper(mode, isNew = true) {
+            appState.mode = mode;
+            if(isNew) appState.currIdx = 0;
+
+            if(mode === 'all') {
+                appState.currPaper = shuffleArr(questionBank);
+            } else if(mode === 'rand50') {
+                let temp = shuffleArr(questionBank);
+                appState.currPaper = temp.slice(0, 50);
+            } else if(mode === 'error') {
+                // 错题库为空提示
+                if(appState.errorList.length === 0) {
+                    questionBox.innerHTML = '<div class="empty-tip">暂无错题，快去刷题吧！</div>';
+                    totalNumEl.innerText = 0;
+                    currIdxEl.innerText = 0;
+                    saveLocal();
+                    return;
+                }
+                appState.currPaper = shuffleArr(appState.errorList);
+            }
+
+            totalNumEl.innerText = appState.currPaper.length;
+            renderQuestions();
+            saveLocal();
+            // 高亮当前模式按钮
+            modeBtns.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+        }
+
+        // 8. 渲染题目
+        function renderQuestions() {
+            questionBox.innerHTML = '';
+            const {currPaper, currIdx, settings} = appState;
+            if(currPaper.length === 0) return;
+
+            // 整页显示 / 单题切换
+            let renderList = settings.allPage ? currPaper : [currPaper[currIdx]];
+
+            renderList.forEach((item, idx) => {
+                let qDiv = document.createElement('div');
+                qDiv.className = 'q-item';
+                // 打乱选项顺序
+                let shuffledOpts = shuffleArr([...item.opts]);
+                let correctOpt = item.ans;
+
+                let html = `<div class="q-title">${settings.allPage ? idx+1 : currIdx+1}. ${item.q}</div>`;
+                shuffledOpts.forEach(opt => {
+                    html += `<div class="option-item" data-ans="${correctOpt}" data-val="${opt.charAt(0)}">${opt}</div>`;
+                });
+                html += `<div class="answer-hint">正确答案：${correctOpt}</div>`;
+                qDiv.innerHTML = html;
+                questionBox.appendChild(qDiv);
+            });
+
+            // 绑定选项点击事件
+            bindOptionClick();
+            // 更新分页按钮状态
+            updatePageBtn();
+            currIdxEl.innerText = currIdx + 1;
+        }
+
+        // 9. 绑定选项点击
+        function bindOptionClick() {
+            const optionItems = document.querySelectorAll('.option-item');
+            optionItems.forEach(opt => {
+                opt.onclick = function() {
+                    // 已选择过则不再响应
+                    if(this.classList.contains('correct') || this.classList.contains('wrong')) return;
+
+                    let userAns = this.dataset.val;
+                    let rightAns = this.dataset.ans;
+                    let parentQ = this.closest('.q-item');
+                    let hint = parentQ.querySelector('.answer-hint');
+
+                    // 判断对错
+                    if(userAns === rightAns) {
+                        this.classList.add('correct');
+                        // 答对：从错题本移除
+                        let qItem = appState.currPaper[appState.currIdx];
+                        appState.errorList = appState.errorList.filter(x => x.q !== qItem.q);
+                        refreshErrorCount();
+                        // 自动下一题
+                        if(appState.settings.autoNext) {
+                            setTimeout(() => nextQuestion(), 600);
+                        }
+                    } else {
+                        this.classList.add('wrong');
+                        // 答错：加入错题本（去重）
+                        let qItem = appState.currPaper[appState.currIdx];
+                        let hasExist = appState.errorList.some(x => x.q === qItem.q);
+                        if(!hasExist) {
+                            appState.errorList.push(qItem);
+                            refreshErrorCount();
+                        }
+                        // 标出正确答案
+                        parentQ.querySelectorAll('.option-item').forEach(o => {
+                            if(o.dataset.val === rightAns) o.classList.add('correct');
+                        });
+                    }
+
+                    // 显示答案提示
+                    if(appState.settings.showAns) {
+                        hint.style.display = 'block';
+                    }
+                    saveLocal();
+                }
+            });
+        }
+
+        // 10. 上一题/下一题
+        function prevQuestion() {
+            if(appState.currIdx > 0) {
+                appState.currIdx--;
+                renderQuestions();
+                saveLocal();
+            }
+        }
+        function nextQuestion() {
+            if(appState.currIdx < appState.currPaper.length - 1) {
+                appState.currIdx++;
+                renderQuestions();
+                saveLocal();
+            }
+        }
+
+        // 11. 更新分页按钮禁用状态
+        function updatePageBtn() {
+            prevBtn.disabled = appState.currIdx === 0;
+            nextBtn.disabled = appState.currIdx === appState.currPaper.length - 1;
+        }
+
+        // 12. 开关事件监听
+        showAnsSwitch.onchange = function() {
+            appState.settings.showAns = this.checked;
+            saveLocal();
+            renderQuestions();
+        };
+        allPageSwitch.onchange = function() {
+            appState.settings.allPage = this.checked;
+            saveLocal();
+            renderQuestions();
+        };
+        autoNextSwitch.onchange = function() {
+            appState.settings.autoNext = this.checked;
+            saveLocal();
+        };
+
+        // 13. 按钮事件
+        prevBtn.onclick = prevQuestion;
+        nextBtn.onclick = nextQuestion;
+
+        // 重置当前试卷（不重新随机）
+        resetCurrBtn.onclick = function() {
+            renderQuestions();
+        };
+        // 重新随机新试卷
+        resetNewBtn.onclick = function() {
+            initPaper(appState.mode, true);
+        };
+        // 清空错题库
+        clearErrorBtn.onclick = function() {
+            if(confirm('确定要清空所有错题记录吗？不可恢复！')) {
+                appState.errorList = [];
+                refreshErrorCount();
+                saveLocal();
+                if(appState.mode === 'error') {
+                    initPaper('error');
+                }
+            }
+        };
+
+        // 模式切换
+        modeBtns.forEach(btn => {
+            btn.onclick = function() {
+                initPaper(this.dataset.mode, true);
+            };
+        });
+
+        // 14. 页面初始化
+        window.onload = function() {
+            loadLocal();
+            initPaper(appState.mode, false);
+        };
+    </script>
+</body>
+</html>
