@@ -2,102 +2,120 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>大学生心理健康离线答题训练系统</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>心理健康 离线答题训练系统</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Microsoft YaHei", sans-serif;
+            font-family: "Microsoft YaHei", system-ui, sans-serif;
         }
         body {
             background-color: #f5f7fa;
-            padding: 20px;
+            padding: 15px 10px;
             line-height: 1.6;
+            font-size: 15px;
+            padding-bottom: 140px; /* 给底部悬浮面板留空间 */
         }
-        。container {
+        .container {
             max-width: 900px;
             margin: 0 auto;
             background: #fff;
             border-radius: 10px;
-            padding: 30px;
+            padding: 20px 15px;
             box-shadow: 0 2px 15px rgba(0,0,0,0.1);
         }
         h1 {
             text-align: center;
             color: #2c3e50;
-            margin-bottom: 30px;
-            font-size: 24px;
+            margin-bottom: 20px;
+            font-size: 20px;
         }
         /* 模式选择区 */
-        。mode-box {
+        .mode-box {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             flex-wrap: wrap;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             justify-content: center;
         }
         .mode-btn {
-            padding: 10px 20px;
+            padding: 8px 12px;
             border: none;
             border-radius: 6px;
             background: #3498db;
             color: #fff;
             cursor: pointer;
-            font-size: 15px;
+            font-size: 14px;
             transition: all 0.3s;
+            flex: 1;
+            min-width: 100px;
+            max-width: 140px;
         }
         .mode-btn.active {
             background: #2980b9;
         }
-        .mode-btn:hover {
+        .mode-btn:active {
             opacity: 0.9;
         }
-        /* 悬浮功能开关面板 */
+        /* 悬浮功能面板 适配手机+电脑 */
         .float-panel {
             position: fixed;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
+            left: 0;
+            right: 0;
+            bottom: 0;
+            transform: none;
             background: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 0 12px rgba(0,0,0,0.15);
+            padding: 12px 15px;
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.15);
             z-index: 999;
-            min-width: 180px;
+            border-radius: 12px 12px 0 0;
+        }
+        @media (min-width: 768px) {
+            .float-panel {
+                position: fixed;
+                right: 20px;
+                top: 50%;
+                bottom: auto;
+                left: auto;
+                transform: translateY(-50%);
+                border-radius: 8px;
+                min-width: 180px;
+                box-shadow: 0 0 12px rgba(0,0,0,0.15);
+            }
         }
         .float-panel h4 {
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             color: #333;
-            font-size: 16px;
+            font-size: 15px;
             text-align: center;
         }
         .switch-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin: 10px 0;
+            margin: 8px 0;
             font-size: 14px;
         }
         .float-btn {
             width: 100%;
-            padding: 8px 0;
-            margin: 6px 0;
+            padding: 9px 0;
+            margin: 5px 0;
             border: none;
-            border-radius: 4px;
-            background: #95a5a6;
+            border-radius: 6px;
             color: #fff;
             cursor: pointer;
             font-size: 14px;
         }
-        .float-btn:nth-child(2) {background: #e67e22;}
-        .float-btn:nth-child(3) {background: #e74c3c;}
+        .float-btn:nth-child(2) {background: #95a5a6;}
+        .float-btn:nth-child(3) {background: #e67e22;}
+        .float-btn:nth-child(4) {background: #e74c3c;}
         /* 开关样式 */
         .switch {
             position: relative;
             display: inline-block;
-            width: 40px;
+            width: 38px;
             height: 20px;
         }
         .switch input {opacity: 0; width: 0; height: 0;}
@@ -119,84 +137,96 @@
             border-radius: 50%;
         }
         input:checked + .slider {background-color: #27ae60;}
-        input:checked + .slider:before {transform: translateX(20px);}
+        input:checked + .slider:before {transform: translateX(18px);}
         /* 题目区域 */
         .q-container {
-            margin: 20px 0;
+            margin: 15px 0;
         }
         .q-item {
-            margin-bottom: 25px;
-            padding-bottom: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
             border-bottom: 1px solid #eee;
         }
         .q-title {
-            font-size: 16px;
+            font-size: 15px;
             color: #2c3e50;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         .option-item {
-            margin: 10px 0;
-            padding: 8px 12px;
-            border-radius: 4px;
+            margin: 8px 0;
+            padding: 12px 10px;
+            border-radius: 6px;
             cursor: pointer;
             border: 1px solid #ddd;
             transition: all 0.2s;
+            font-size: 15px;
+            /* 手机加大触控区域 */
+            min-height: 44px;
+            display: flex;
+            align-items: center;
         }
-        .option-item:hover {background: #f0f7ff;}
+        .option-item:active {background: #f0f7ff;}
         .option-item.correct {background: #2ecc71; color: #fff; border-color: #27ae60;}
         .option-item.wrong {background: #e74c3c; color: #fff; border-color: #c0392b;}
         .answer-hint {
             margin-top: 10px;
-            padding: 8px;
+            padding: 8px 10px;
             background: #fef5e7;
-            border-radius: 4px;
+            border-radius: 6px;
             color: #d35400;
             display: none;
+            font-size: 14px;
         }
         /* 分页控制 */
         .page-control {
             display: flex;
             justify-content: space-between;
-            margin-top: 30px;
+            margin-top: 20px;
+            gap: 10px;
         }
         .page-btn {
-            padding: 8px 25px;
+            flex: 1;
+            padding: 12px 0;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             background: #3498db;
             color: #fff;
             cursor: pointer;
+            font-size: 15px;
         }
         .page-btn:disabled {background: #bdc3c7; cursor: not-allowed;}
         /* 统计信息 */
         .stat-info {
             text-align: center;
-            margin: 15px 0;
-            font-size: 15px;
+            margin: 10px 0;
+            font-size: 14px;
             color: #666;
         }
         /* 无题目提示 */
         .empty-tip {
             text-align: center;
-            padding: 50px 0;
+            padding: 40px 0;
             color: #999;
-            font-size: 16px;
+            font-size: 15px;
+        }
+        hr {
+            margin:10px 0;border:none;border-top:1px solid #eee;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>大学生心理健康 离线答题训练系统</h1>
+        <h1>心理健康 离线答题训练系统</h1>
         <!-- 模式选择 -->
         <div class="mode-box">
-            <button class="mode-btn" data-mode="all">全部题库训练</button>
-            <button class="mode-btn" data-mode="rand50">随机50题训练</button>
-            <button class="mode-btn" data-mode="error">错题库专项训练</button>
+            <button class="mode-btn" data-mode="all">全部题库</button>
+            <button class="mode-btn" data-mode="rand50">随机50题</button>
+            <button class="mode-btn" data-mode="error">错题训练</button>
         </div>
         <!-- 统计信息 -->
         <div class="stat-info">
-            当前进度：<span id="currIdx">0</span> / <span id="totalNum">0</span> &nbsp;&nbsp;
-            错题总数：<span id="errorCount">0</span>
+            进度：<span id="currIdx">0</span> / <span id="totalNum">0</span> &nbsp;&nbsp;
+            错题：<span id="errorCount">0</span>
         </div>
         <!-- 题目渲染区域 -->
         <div id="questionBox" class="q-container"></div>
@@ -207,18 +237,18 @@
         </div>
     </div>
 
-    <!-- 悬浮功能面板 -->
+    <!-- 悬浮功能面板：手机底部、电脑右侧 -->
     <div class="float-panel">
-        <h4>功能开关</h4>
+        <h4>功能设置</h4>
         <div class="switch-item">
-            <span>选择后显示答案</span>
+            <span>选后显示答案</span>
             <label class="switch">
                 <input type="checkbox" id="showAnsSwitch">
                 <span class="slider"></span>
             </label>
         </div>
         <div class="switch-item">
-            <span>整页显示所有题目</span>
+            <span>整页显示题目</span>
             <label class="switch">
                 <input type="checkbox" id="allPageSwitch">
                 <span class="slider"></span>
@@ -231,14 +261,14 @@
                 <span class="slider"></span>
             </label>
         </div>
-        <hr style="margin:15px 0;border:none;border-top:1px solid #eee;">
+        <hr>
         <button class="float-btn" id="resetCurr">重置当前试卷</button>
-        <button class="float-btn" id="resetNew">重新随机新试卷</button>
+        <button class="float-btn" id="resetNew">重新随机试卷</button>
         <button class="float-btn" id="clearError">清空错题库</button>
     </div>
 
     <script>
-        // 1. 完整题库数据
+        // 完整题库数据
         const questionBank = [
 {"q":"以下哪项不符合心理健康的标准？?","opts":["A. 自我陶醉","B. 勇敢","C. 关爱他人","D. 热爱生命"],"ans":"A"},
 {"q":"请在下列选项中找出低自我形象。?","opts":["A. 接纳自我","B. 有安全感","C. 不清楚个人的能力","D. 对自己的行为负责"],"ans":"C"},
@@ -342,12 +372,12 @@
 {"q":"以下哪一项对压力的理解是正确的?","opts":["A. 压力管理贯穿生命始终","B. 你离开单位时就会留下工作的压力而不会把它带回家","C. 只要你遭受到压力,你一定会知道的","D. 压力是可以完全消除的"],"ans":"A"}
         ];
 
-        // 2. 全局状态
+        // 全局状态
         let appState = {
-            mode: 'all',          // all / rand50 / error
-            currIdx: 0,           // 当前题目索引
-            currPaper: [],        // 当前试卷题目列表
-            errorList: [],        // 错题库
+            mode: 'all',
+            currIdx: 0,
+            currPaper: [],
+            errorList: [],
             settings: {
                 showAns: false,
                 allPage: false,
@@ -355,7 +385,7 @@
             }
         };
 
-        // 3. DOM元素
+        // DOM元素
         const questionBox = document.getElementById('questionBox');
         const currIdxEl = document.getElementById('currIdx');
         const totalNumEl = document.getElementById('totalNum');
@@ -370,7 +400,7 @@
         const clearErrorBtn = document.getElementById('clearError');
         const modeBtns = document.querySelectorAll('.mode-btn');
 
-        // 4. 工具函数：数组随机打乱
+        // 数组随机打乱
         function shuffleArr(arr) {
             let res = [...arr];
             for(let i = res.length - 1; i > 0; i--) {
@@ -380,26 +410,25 @@
             return res;
         }
 
-        // 5. 本地存储读写
+        // 本地存储
         function saveLocal() {
             localStorage.setItem('examAppState', JSON.stringify(appState));
         }
         function loadLocal() {
             let data = localStorage.getItem('examAppState');
             if(data) appState = JSON.parse(data);
-            // 同步开关状态
             showAnsSwitch.checked = appState.settings.showAns;
             allPageSwitch.checked = appState.settings.allPage;
             autoNextSwitch.checked = appState.settings.autoNext;
             refreshErrorCount();
         }
 
-        // 6. 刷新错题数量显示
+        // 刷新错题数
         function refreshErrorCount() {
             errorCountEl.innerText = appState.errorList.length;
         }
 
-        // 7. 初始化当前试卷
+        // 初始化试卷
         function initPaper(mode, isNew = true) {
             appState.mode = mode;
             if(isNew) appState.currIdx = 0;
@@ -410,7 +439,6 @@
                 let temp = shuffleArr(questionBank);
                 appState.currPaper = temp.slice(0, 50);
             } else if(mode === 'error') {
-                // 错题库为空提示
                 if(appState.errorList.length === 0) {
                     questionBox.innerHTML = '<div class="empty-tip">暂无错题，快去刷题吧！</div>';
                     totalNumEl.innerText = 0;
@@ -424,25 +452,22 @@
             totalNumEl.innerText = appState.currPaper.length;
             renderQuestions();
             saveLocal();
-            // 高亮当前模式按钮
             modeBtns.forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.mode === mode);
             });
         }
 
-        // 8. 渲染题目
+        // 渲染题目
         function renderQuestions() {
             questionBox.innerHTML = '';
             const {currPaper, currIdx, settings} = appState;
             if(currPaper.length === 0) return;
 
-            // 整页显示 / 单题切换
             let renderList = settings.allPage ? currPaper : [currPaper[currIdx]];
 
             renderList.forEach((item, idx) => {
                 let qDiv = document.createElement('div');
                 qDiv.className = 'q-item';
-                // 打乱选项顺序
                 let shuffledOpts = shuffleArr([...item.opts]);
                 let correctOpt = item.ans;
 
@@ -455,19 +480,16 @@
                 questionBox.appendChild(qDiv);
             });
 
-            // 绑定选项点击事件
             bindOptionClick();
-            // 更新分页按钮状态
             updatePageBtn();
             currIdxEl.innerText = currIdx + 1;
         }
 
-        // 9. 绑定选项点击
+        // 绑定选项点击
         function bindOptionClick() {
             const optionItems = document.querySelectorAll('.option-item');
             optionItems.forEach(opt => {
                 opt.onclick = function() {
-                    // 已选择过则不再响应
                     if(this.classList.contains('correct') || this.classList.contains('wrong')) return;
 
                     let userAns = this.dataset.val;
@@ -475,33 +497,27 @@
                     let parentQ = this.closest('.q-item');
                     let hint = parentQ.querySelector('.answer-hint');
 
-                    // 判断对错
                     if(userAns === rightAns) {
                         this.classList.add('correct');
-                        // 答对：从错题本移除
                         let qItem = appState.currPaper[appState.currIdx];
                         appState.errorList = appState.errorList.filter(x => x.q !== qItem.q);
                         refreshErrorCount();
-                        // 自动下一题
                         if(appState.settings.autoNext) {
                             setTimeout(() => nextQuestion(), 600);
                         }
                     } else {
                         this.classList.add('wrong');
-                        // 答错：加入错题本（去重）
                         let qItem = appState.currPaper[appState.currIdx];
                         let hasExist = appState.errorList.some(x => x.q === qItem.q);
                         if(!hasExist) {
                             appState.errorList.push(qItem);
                             refreshErrorCount();
                         }
-                        // 标出正确答案
                         parentQ.querySelectorAll('.option-item').forEach(o => {
                             if(o.dataset.val === rightAns) o.classList.add('correct');
                         });
                     }
 
-                    // 显示答案提示
                     if(appState.settings.showAns) {
                         hint.style.display = 'block';
                     }
@@ -510,7 +526,7 @@
             });
         }
 
-        // 10. 上一题/下一题
+        // 上下题
         function prevQuestion() {
             if(appState.currIdx > 0) {
                 appState.currIdx--;
@@ -526,13 +542,13 @@
             }
         }
 
-        // 11. 更新分页按钮禁用状态
+        // 分页按钮状态
         function updatePageBtn() {
             prevBtn.disabled = appState.currIdx === 0;
             nextBtn.disabled = appState.currIdx === appState.currPaper.length - 1;
         }
 
-        // 12. 开关事件监听
+        // 开关监听
         showAnsSwitch.onchange = function() {
             appState.settings.showAns = this.checked;
             saveLocal();
@@ -548,21 +564,18 @@
             saveLocal();
         };
 
-        // 13. 按钮事件
+        // 按钮事件
         prevBtn.onclick = prevQuestion;
         nextBtn.onclick = nextQuestion;
 
-        // 重置当前试卷（不重新随机）
         resetCurrBtn.onclick = function() {
             renderQuestions();
         };
-        // 重新随机新试卷
         resetNewBtn.onclick = function() {
             initPaper(appState.mode, true);
         };
-        // 清空错题库
         clearErrorBtn.onclick = function() {
-            if(confirm('确定要清空所有错题记录吗？不可恢复！')) {
+            if(confirm('确定清空所有错题记录？不可恢复！')) {
                 appState.errorList = [];
                 refreshErrorCount();
                 saveLocal();
@@ -572,14 +585,13 @@
             }
         };
 
-        // 模式切换
         modeBtns.forEach(btn => {
             btn.onclick = function() {
                 initPaper(this.dataset.mode, true);
             };
         });
 
-        // 14. 页面初始化
+        // 初始化
         window.onload = function() {
             loadLocal();
             initPaper(appState.mode, false);
