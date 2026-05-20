@@ -18,7 +18,7 @@
             font-size: 15px;
             padding-bottom: 30px;
         }
-        。container {
+        .container {
             max-width: 900px;
             margin: 0 auto;
             background: #fff;
@@ -33,7 +33,7 @@
             font-size: 20px;
         }
         /* 模式栏：增加设置按钮 */
-        。mode-box {
+        .mode-box {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
@@ -87,7 +87,7 @@
             display: none;
         }
         /* 移动端底部弹窗 */
-        。popup-set {
+        .popup-set {
             position: fixed;
             left: 0;
             right: 0;
@@ -102,7 +102,7 @@
         .popup-set.show {
             transform: translateY(0);
         }
-        .popup-mask.show {
+        。popup-mask.show {
             display: block;
         }
         .popup-head {
@@ -131,7 +131,7 @@
         }
         .float-btn:nth-child(1) {background: #95a5a6;}
         .float-btn:nth-child(2) {background: #e67e22;}
-        .float-btn:nth-child(3) {background: #e74c3c;}
+        。float-btn:nth-child(3) {background: #e74c3c;}
         .close-popup {
             margin-top: 10px;
             background: #eee !important;
@@ -241,7 +241,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>青心赛题库</h1>
+        <h1>第十一届青心赛题库</h1>
         <!-- 模式选择 + 设置按钮 -->
         <div class="mode-box">
             <button class="mode-btn" data-mode="all">全部题库</button>
@@ -575,7 +575,7 @@
                             setTimeout(() => nextQuestion(), 600);
                         }
                     } else {
-                        this.classList.add('wrong');
+                        this。classList.add('wrong');
                         let qItem = appState.currPaper[appState.currIdx];
                         let hasExist = appState.errorList.some(x => x.q === qItem.q);
                         if(!hasExist) {
@@ -632,7 +632,7 @@
         // 电脑端开关监听
         showAnsSwitch.onchange = ()=>syncSwitch('showAns', showAnsSwitch.checked);
         allPageSwitch.onchange = ()=>syncSwitch('allPage', allPageSwitch.checked);
-        autoNextSwitch.onchange = ()=>syncSwitch('autoNext', autoNextSwitch.checked);
+        autoNextSwitch。onchange = ()=>syncSwitch('autoNext', autoNextSwitch.checked);
 
         // 弹窗开关监听
         popSwitches.forEach(item=>{
